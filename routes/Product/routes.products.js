@@ -12,7 +12,7 @@ const verifyCsrf = require("../../security/verifyCsrf");
 const router = express.Router();
 
 
-router.post("/createProduct", verifyCsrf, upload.array("products[][image]", 50), createProduct);
+router.post("/createProduct", verifyCsrf, upload.any(), createProduct);
 
 router.get("/getAllProducts", getAllProducts);
 router.get("/getProductById/:id", getProductById);

@@ -51,16 +51,30 @@ exports.createProduct = async (req, res) => {
     let failed = 0;
     const results = [];
 
+    // ✅ 1. Detect duplicate SKUs inside request
+    const seenSkus = new Set();
+    for (let i = 0; i < productsData.length; i++) {
+      const sku = productsData[i].sku;
+
+      if (seenSkus.has(sku)) {
+        return res.status(400).json({
+          message: `Duplicate SKU found in uploaded list: ${sku}`,
+          index: i,
+        });
+      }
+
+      seenSkus.add(sku);
+    }
+
+    // ✅ 2. Process each product
     for (let i = 0; i < productsData.length; i++) {
       let product = productsData[i];
 
-      // ✅ Find image for the i-th product
-      let imageFile = files.find(
-        (f) => f.fieldname === `products[${i}][image]`
-      );
+      // ✅ Find image for i-th product
+      let imageFile = files.find((f) => f.fieldname === `products[${i}][image]`);
 
       try {
-        // ✅ Validate each product
+        // ✅ 3. Validate product with Joi
         const { error } = productCreateSchema.validate(product);
         if (error) {
           failed++;
@@ -68,7 +82,15 @@ exports.createProduct = async (req, res) => {
           continue;
         }
 
-        // ✅ Ensure vendor exists
+        // ✅ 4. Check SKU uniqueness in DB
+        const skuExists = await Product.findOne({ sku: product.sku });
+        if (skuExists) {
+          failed++;
+          results.push({ index: i, error: `SKU already exists: ${product.sku}` });
+          continue;
+        }
+
+        // ✅ 5. Check vendor existence
         const vendor = await Vendor.findById(product.vendorId);
         if (!vendor) {
           failed++;
@@ -76,7 +98,7 @@ exports.createProduct = async (req, res) => {
           continue;
         }
 
-        // ✅ Prepare product entry
+        // ✅ 6. Prepare & save product
         const newProduct = new Product({
           ...product,
           inStock: Number(product.inStock || 0),
@@ -105,6 +127,7 @@ exports.createProduct = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 
 

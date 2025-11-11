@@ -100,6 +100,7 @@ exports.createVendorProfile = async (req, res) => {
     res.status(500).json({ error: "Server error. Please try again." });
   }
 };
+
 // exports.createVendorProfile = async (req, res) => {
 //   try {
 //     // const { email, phoneNumber, password, userName, fullname } = req.body;
