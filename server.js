@@ -7,14 +7,21 @@ const path = require('path')
 const cookieParser = require('cookie-parser');
 
 // routes
-const vendorRoutes = require('./routes/routes.VendorProfile');
-const vendorStoreRoutes = require('./routes/routes.vendorStore')
+const vendorRoutes = require('./routes/VendorProfile/routes.VendorProfile');
+const vendorStoreRoutes = require('./routes/VendorStore/routes.vendorStore')
+const productRoutes = require('./routes/Product/routes.products');
+
+// CsvParser Routes
+const csvParserRoutes = require('./routes/ParserRoutes/routes.productCsvParser')
+
+// ExcelParser Routes 
+const excelParserRoutes = require('./routes/ParserRoutes/routes.productsExcelParser')
 const app = express();
 
 
 app.use(cookieParser())
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: process.env.ALLOW_RIGEON,
     credentials: true
 }));
 app.use(express.json());
@@ -33,7 +40,15 @@ mongoose
 .catch((err) => console.log('faild db connection', err.message) );
 
 app.use('/api/vendor', vendorRoutes);
-app.use('/api/vendorStore', vendorStoreRoutes)
+app.use('/api/vendorStore', vendorStoreRoutes);
+app.use('/api/product', productRoutes);
+
+// Csv parser Mounted
+app.use('/api/csvParser',csvParserRoutes);
+
+// Excel Parser Mounted
+app.use('/api/excelParser', excelParserRoutes)
+
 
 app.listen(process.env.PORT || 3000, () =>{
     console.log(`✅ Server running on http://localhost:3000`)
