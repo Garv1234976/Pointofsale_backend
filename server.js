@@ -1,5 +1,4 @@
 require("dotenv").config();
-
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -11,6 +10,8 @@ const vendorRoutes = require('./routes/VendorProfile/routes.VendorProfile');
 const vendorStoreRoutes = require('./routes/VendorStore/routes.vendorStore')
 const productRoutes = require('./routes/Product/routes.products');
 
+// LoginRoutes
+const loginVendor = require('./routes/AuthRoutes/routes.authRoutes')
 // CsvParser Routes
 const csvParserRoutes = require('./routes/ParserRoutes/routes.productCsvParser')
 
@@ -43,6 +44,8 @@ app.use('/api/vendor', vendorRoutes);
 app.use('/api/vendorStore', vendorStoreRoutes);
 app.use('/api/product', productRoutes);
 
+// login page
+app.use('/api/vendor', loginVendor)
 // Csv parser Mounted
 app.use('/api/csvParser',csvParserRoutes);
 
