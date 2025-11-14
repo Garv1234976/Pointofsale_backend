@@ -1,3 +1,4 @@
+require("dotenv").config();
 const VendorProfile = require("../../models/VendorRegistration");
 const fs = require("fs");
 const path = require("path");
@@ -66,7 +67,7 @@ exports.createVendorProfile = async (req, res) => {
 
     // ✅ Set JWT cookie
     res.cookie("auth_token", token, {
-      httpOnly: true,
+      httpOnly: false,
       secure: false,  // set true in prod
       sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,

@@ -53,6 +53,9 @@ app.use('/api/csvParser',csvParserRoutes);
 app.use('/api/excelParser', excelParserRoutes)
 
 
+// Context api
+app.use('/api/infoAbout/', require('./routes/Context/routes.vendorAbout'))
+
 app.listen(process.env.PORT || 3000, () =>{
     console.log(`✅ Server running on http://localhost:3000`)
 })

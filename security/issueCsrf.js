@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const {generateCsrfToken} = require('./csrf');
 
 module.exports = function issueCsrf(req, res, next){

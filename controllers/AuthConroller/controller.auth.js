@@ -1,3 +1,4 @@
+require("dotenv").config();
 const Vendor = require('../../models/VendorRegistration')
 const bcrypt = require("bcrypt");
 const { generateToken } = require("../../utils/jwt");
@@ -31,7 +32,7 @@ exports.loginVendor = async (req, res) => {
 
     // ✅ Set auth cookie (httpOnly)
     res.cookie("auth_token", token, {
-      httpOnly: true,
+      httpOnly: false,
       secure: false,   // ✅ true in production
       sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
