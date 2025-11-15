@@ -7,6 +7,7 @@ const ProductDetailSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "VendorProfile",
       required: true,
+      unique: true
     },
 
     mrp: {

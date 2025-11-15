@@ -48,7 +48,7 @@ const VendorStoreSchema = new mongoose.Schema(
     // ✅ Vendor reference
     vendorId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Vendor",
+      ref: "VendorProfile",
       required: true,
     },
 

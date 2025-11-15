@@ -48,6 +48,10 @@ const VendorSchema = new mongoose.Schema(
     profileImg: {
       type: String,
     },
+    storeId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'VendorStore'
+    }
   },
   { timestamps: true }
 );

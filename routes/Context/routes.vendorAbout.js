@@ -6,7 +6,7 @@ const Vendor = require('../../models/VendorRegistration')
 
 router.get("/me", authVendor, async (req, res) => {
   try {
-    const vendor = await Vendor.findById(req.vendorId).select("-password");
+    const vendor = await Vendor.findById(req.vendorId).select("-password").populate('storeId');
 
     if (!vendor) {
       return res.status(404).json({ message: "Vendor not found" });

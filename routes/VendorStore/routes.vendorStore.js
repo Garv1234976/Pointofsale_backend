@@ -17,6 +17,7 @@ router.post(
   upload.single("storeLogo"),
   createVendorStore
 );
+
 router.get("/getAllVendorStores", getAllVendorStores);
 router.get("/getVendorStoreById/:id", getVendorStoreById);
 

@@ -41,11 +41,12 @@ exports.getVendorStoreById = async (req, res) => {
  * @param {*} res 
  * @returns 
  */
+
 exports.createVendorStore = async (req, res) => {
   try {
     let { storeAddress } = req.body;
 
-    // ✅ 1. Convert storeAddress string → real array BEFORE Joi validation
+    // Convert storeAddress string → real array
     if (storeAddress) {
       try {
         req.body.storeAddress =
@@ -59,26 +60,29 @@ exports.createVendorStore = async (req, res) => {
       }
     }
 
-    // ✅ 2. Now validate using Joi (storeAddress is now real array ✅)
+    // Validate with Joi
     const { error } = vendorStoreCreateSchema.validate(req.body);
-
     if (error) {
       return res.status(400).json({
-        // message: "Validation failed",
         message: error.details[0].message,
-        error: error.details[0].message,
       });
     }
 
     const { storeName, storeCategory, vendorId, gstNumber, companyName } = req.body;
 
-    // ✅ 3. Vendor Exists?
+    // Check if vendor exists
     const vendorExists = await Vendor.findById(vendorId);
     if (!vendorExists) {
       return res.status(404).json({ message: "Vendor not found" });
     }
 
-    // ✅ 4. Create Store
+    // Check if vendor already has a store
+    const existingStore = await VendorStore.findOne({ vendorId });
+    if (existingStore) {
+      return res.status(400).json({ message: "Vendor already has a store" });
+    }
+
+    // Create new store
     const newStore = new VendorStore({
       storeName,
       storeCategory,
@@ -91,6 +95,11 @@ exports.createVendorStore = async (req, res) => {
 
     await newStore.save();
 
+    //  Update vendor profile with storeId
+    vendorExists.storeId = newStore._id;
+    await vendorExists.save();
+
+    // Return response
     res.status(201).json({
       message: "Vendor store created successfully",
       store: newStore,
@@ -103,7 +112,6 @@ exports.createVendorStore = async (req, res) => {
 };
 
 
-
 /**
  * 
  * @param {*} req 
@@ -114,41 +122,13 @@ exports.updateVendorStore = async (req, res) => {
   try {
     const storeId = req.params.id;
 
-    // ✅ 1. Joi validation
-    const { error } = vendorStoreUpdateSchema.validate(req.body);
-    if (error) {
-      return res.status(400).json({
-        // message: "Validation failed",
-        message: error.details[0].message,
-        error: error.details[0].message,
-      });
-    }
-
-    // ✅ 2. Check if store exists
-    const store = await VendorStore.findById(storeId);
-    if (!store) {
-      return res.status(404).json({ message: "Store not found" });
-    }
-
-    let updateData = { ...req.body };
-
-    // ✅ 3. Handle logo update
-    if (req.file) {
-      // Remove old logo if exists
-      if (store.storeLogo) {
-        const oldImgPath = path.join("public/uploads", store.storeLogo);
-        if (fs.existsSync(oldImgPath)) {
-          fs.unlinkSync(oldImgPath);
-        }
-      }
-
-      updateData.storeLogo = req.file.filename;
-    }
-
-    // ✅ 4. Parse storeAddress if provided (form-data sends string)
-    if (updateData.storeAddress) {
+    // ✅ Parse storeAddress first
+    if (req.body.storeAddress) {
       try {
-        updateData.storeAddress = JSON.parse(updateData.storeAddress);
+        req.body.storeAddress =
+          typeof req.body.storeAddress === "string"
+            ? JSON.parse(req.body.storeAddress)
+            : req.body.storeAddress;
       } catch (err) {
         return res.status(400).json({
           message: "storeAddress must be valid JSON array",
@@ -156,7 +136,33 @@ exports.updateVendorStore = async (req, res) => {
       }
     }
 
-    // ✅ 5. Update store
+    // ✅ Joi validation
+    const { error } = vendorStoreUpdateSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({
+        message: error.details[0].message,
+        error: error.details[0].message,
+      });
+    }
+
+    // ✅ Check if store exists
+    const store = await VendorStore.findById(storeId);
+    if (!store) {
+      return res.status(404).json({ message: "Store not found" });
+    }
+
+    let updateData = { ...req.body };
+
+    // ✅ Handle logo update
+    if (req.file) {
+      if (store.storeLogo) {
+        const oldImgPath = path.join("public/uploads", store.storeLogo);
+        if (fs.existsSync(oldImgPath)) fs.unlinkSync(oldImgPath);
+      }
+      updateData.storeLogo = req.file.filename;
+    }
+
+    // ✅ Update store
     const updatedStore = await VendorStore.findByIdAndUpdate(
       storeId,
       updateData,
